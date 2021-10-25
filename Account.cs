@@ -1,46 +1,53 @@
 ﻿using System;
 
-namespace ATM
+namespace ATM_PROJ
 {
-    public class Account
+    public class Account : IAccount
     {
-        public int Balance { get; set; }
-        public int OverDraft { get; set; }
-        public int Total { get; set; }
+        public int Balance { get; private set; }
+        private int OverDraft { get; set; }
+        private int TotalFunds { get; set; }
         public int AccountNumber { get; set; }
-        public int Pin { get; set; }
+        private int Pin { get; set; }
 
-        public Account(string funds, string accountNumber, string overDraft, string pin)
+        public Account(int accountNumber, string balance, string overDraft, string pin)
         {
-            Balance = int.Parse(funds);
+            AccountNumber = accountNumber;
+            Balance = int.Parse(balance);
             OverDraft = int.Parse(overDraft);
-            AccountNumber = int.Parse(accountNumber);
             Pin = int.Parse(pin);
-            Total = Balance + OverDraft;
+            TotalFunds = Balance + OverDraft;
         }
 
-        public int Withdraw(int amount)
+        public string Withdraw(int amount)
         {
-            if (Total - amount > 0)
+            Balance -= amount;
+
+            if (Balance < 0)
             {
-                Balance -= amount;
-                if (Balance < 0)
-                {
-                    OverDraft -= Math.Abs(Balance);
-                    Balance = 0;
-                }
+                OverDraft -= Math.Abs(Balance);
+                Balance = 0;
+            }
+
+            TotalFunds -= amount;
+            return Balance.ToString();
+        }
+
+        public bool HasFunds(int amount)
+        {
+            return (TotalFunds - amount) >= 0;
+        }
+
+        public string VerifyPin(int pin)
+        {
+            if (Pin == pin)
+            {
+                return null;
             } 
             else
             {
-                OverDraft -= amount;
+                return "ACCOUNT_ERR";
             }
-
-            return amount;
-        }
-
-        public void Deposit(int amount)
-        {
-            Balance += amount;
         }
     }
 }

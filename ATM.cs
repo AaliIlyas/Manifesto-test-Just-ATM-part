@@ -4,43 +4,72 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ATM
+namespace ATM_PROJ
 {
-    public class ATM
+    public class ATM : IATM
     {
-        public int TotalCash { get; set; }
+        private int TotalCash { get; set; }
 
-        public List<Account> Accounts { get; set; }
+        private List<IAccount> Accounts = new List<IAccount>() { }; // Assumed that a record of accounts will be kept external like a database.
 
-        public ATM(string amount)
+        public ATM(int amount)
         {
-            TotalCash = int.Parse(amount);
+            TotalCash = amount;
         }
 
-        public void Withdraw(int amount)
+        public string Withdraw(int accountNumber, int amount)
         {
-            TotalCash -= amount;
+            var currentAccount = GetAccount(accountNumber);
+
+            if (this.HasFunds(amount)) 
+            {
+                if (currentAccount.HasFunds(amount))
+                {
+                    TotalCash -= amount;
+                    currentAccount.Withdraw(amount);
+                }
+                else
+                {
+                    return "FUNDS_ERR";
+                }
+            }
+            else
+            {
+                return "ATM_ERR";
+            }
+
+
+            return currentAccount.Balance.ToString();
         }
 
-        public int Deposit (int amount)
-        {
-            TotalCash += amount;
-            return TotalCash;
-        }
-
-        public void AddAccount (Account account)
+        public void AddAccount(IAccount account)
         {
             Accounts.Add(account);
-        } 
+        }
 
         public bool HasFunds(int amount)
         {
-            if (TotalCash - amount > 0)
-            {
-                return true;
-            }
+            return (TotalCash - amount) >= 0;
+        }
 
-            return false;
+        public IAccount GetAccount(int accountNumber)
+        {
+            try
+            {
+                return Accounts
+                    .Where(a => a.AccountNumber == accountNumber)
+                    .Single();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public int GetBalance(int accountNumber)
+        {
+            var account = GetAccount(accountNumber);
+            return account.Balance;
         }
     }
 }
